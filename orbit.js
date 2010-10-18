@@ -15,7 +15,7 @@
 			return new orbit.fn.init(selector, args);
 		}
 			
-		version = "0.1";
+		version = "0.2";
 		
 		orbit.fn = orbit.prototype = {
 			// Wrapper for the NW.Matcher, CSS 3 Selector engine.
@@ -231,7 +231,7 @@
 					timeCache = 0,
 					getElapsedPercent,
 					
-					//Public Methods returned with the a
+					//Public Methods returned with the tween handle
 					
 					start,
 					stop,
@@ -327,7 +327,6 @@
 					tx, ty, itx, ity,
 					n, nl, j, k, p, o, step = Math.PI / (CIRCLE_RESOLUTION * 4),
 					applyOffsetsToOrigin;
-					//alert(CIRCLE_RESOLUTION);
 					
 					applyOffsetsToOrigin = function (x, y) {
 						// HELPER: apply x and y offsets to the origin point, getting final position
@@ -424,13 +423,6 @@
 				 *
 				 */
 					animations[i].transforms[0] = initTransform(animations[i].startValue, animations[i].endValue);
-					/*
-					// Hopefully redundant code.... 
-					animations[i].transforms[0] = {};
-					animations[i].transforms[0].startValue = stripUnits(animations[i].startValue);
-					animations[i].transforms[0].endValue = stripUnits(animations[i].endValue);
-					animations[i].transforms[0].curve = [];
-					 */
 				};
 				
 				initTransform = function (start, end){
@@ -464,8 +456,6 @@
 					that.setStyle("position", "absolute");
 				};
 				
-				// Create an array of 
-				
 				
 	
 				i = animations.length; 
@@ -482,16 +472,13 @@
 						ani.transforms = [];
 						genericInitHandler();
 						
-						ani.isOrbit = true;
-						//this.each(absolutize); // Okay, without this it doesn't move!!		
+						ani.isOrbit = true;		
 												
 						circlePointsPrecalc();
-						
-						//knickers = ani.circlePreCache;
 					
 					}else if(ani.handle && typeof ani.handle.getRawValuesAtFrame === 'function'){
 					
-						// How do we optimise this for step? 
+						// Do we optimise this for step()? 
 					
 					}else{
 				
@@ -534,7 +521,6 @@
 								for(m = 0; m < 2; m+=1){
 									ani.transforms[m] = initTransform(startValues[m], endValues[m]);
 								}
-								//knickers = ani;
 								this.each(absolutize);
 								break;
 							default:
@@ -573,7 +559,6 @@
 					var value = 0, b = bezier;
 					// Voodoo Bezier curve mathematics.
 					value = bez.p1 * b.B1(percent) + bez.p2 * b.B2(percent) + bez.p3 * b.B3(percent) + bez.p4 * b.B4(percent);
-					//return (Math.round(value * 1000) / 1000); // Round to 2 decimal places
 					return value;
 				};
 				
@@ -584,7 +569,7 @@
 				 * end value and pathType configured, calculate the value for each point on the path
 				 *
 				 */
-					var /* startValue, endValue, */ bez, i, j, m, difference;
+					var bez, i, j, m, difference;
 					
 					generateBezierCurve = function(startValue, endValue){
 					/*
@@ -593,13 +578,11 @@
 				 	*
 					*/
 						var temp = [];
-						//knickers = [];
 						var l;
 						bez = pathType(startValue, endValue);
 						if (!bez) {
 							// linear curve - identical increments between start and end
 							// along the curve.
-							//knickers = 'not bez';
 							difference = endValue - startValue;
 							
 							l = (steps + 1);
@@ -609,19 +592,16 @@
 								}else{
 								temp[l] = startValue;
 								}
-								//knickers[l] = (startValue + difference * (l / 100) * 1.0);
 								
 							}
 						} else {
 							// get the calculated value of each point along the bezier curve
-							//knickers = 'bez';
 							j = (steps + 1);
 							while(j--){
 								temp[j] = getValueByPercent((j / steps), bez);
 							}
 							
 						}
-						//knickers = temp;
 						return temp;
 					};
 					
@@ -635,7 +615,6 @@
 								animations[i].transforms[m].path = generateBezierCurve(
 									animations[i].transforms[m].startValue, 
 									animations[i].transforms[m].endValue);	
-								//knickers = 	animations[i].transforms[m].startValue;
 								if(animations[i].isOrbit){
 									j = (steps + 1);
 									var t = animations[i].transforms;
@@ -665,9 +644,7 @@
 					elapsedTime = (new Date()).getTime() - startTime;
 					
 					var percent = Math.round(elapsedTime / (duration));
-					//that.each(function (el) {
-					//		el.innerHTML = diff + "ms";
-					//});
+
 					if (percent > steps) {
 						percent = steps;
 					}
@@ -732,8 +709,7 @@
 				goToFrame = function (p, elapsedTime) {
 				/******
 				 *
-				 * PUBLIC: Instead of using tweens built in timer methods, goToFrame allows the animator or
-				 * UI programmer to 
+				 * PUBLIC: Internal use only, though.
 				 *
 				 */
 					percent = p;
@@ -751,8 +727,6 @@
 					return this;
 				};
 				goToFrameAtTime = function ( elapsedTime ) {
-				
-					//
 					
 					elapsedTime = elapsedTime % (duration * steps);
 					
@@ -768,16 +742,13 @@
 					opacity : function (o) {
 	
 						var value = o.transforms[0].path[percent];
-						//if(o.cache===value){
-							// Value not changed. Do nothing.
-						//}else{
-							//o.cache = value;
+	
 						that.each(function (el)  {
 							el.style.opacity = value / 100;
 							el.style.filter = "alpha(opacity="+value+")";
 	
 						});
-						//}
+
 					},
 					generic : function (o) {
 						// Generic 
@@ -803,7 +774,7 @@
 						});
 					},
 					position : function (o) {
-						// Not yet implemented... should it be?
+
 						var value = {};
 						value.x = o.transforms[0].path[percent];
 						value.y = o.transforms[1].path[percent];
@@ -838,9 +809,6 @@
 					},
 					rotate : function (o) {
 						var value = o.transforms[0].path[percent];
-						//if(o.units=="px"){
-						//	value = Math.round(value); // rounding px values is necessary for IE??? *CHECK!!!*
-						//}
 						that.each(function (el) {
 							el.style["-webkit-transform"] = "rotate("+value+"deg)";
 							el.style.MozTransform = "rotate("+value+"deg)";
@@ -902,18 +870,12 @@
 							if (stopAnimation !== true) {
 								
 								if(loop==='reverse' && reverse===false){
-									//alert('beep');
 									reverse=true;
 								}else{
-									//alert('boop');
 									reverse=false;
 								}
-								//knickers = reverse;
 											
-								//d = new Date();
-								startTime = startTime + (duration * steps);
-								//endTime = startTime + (duration * 100);	
-								//knickers = startTime;
+								startTime = startTime + (duration * steps);	
 								timeoutID = setTimeout(step, tick);
 							} else {
 								if (callback) {
@@ -960,24 +922,13 @@ orbit.fn.extend({
 	 * EVENTS: This is just a wrapper for NW.Events. 
 	 *
 	 */
-	on : function (e, func) { // Basic click handler
-		var that = this;
-		//this.funcs = [];
-		//this.funcs[e] = func;
-		
+	on : function (e, func) { 
 		this.each(function (el) {
 			NW.Event.appendListener(el, e, func, false);
-			//el.addEventListener(e, that.handleEvent, false);
-			//if(!el.events){
-			//	el.events = {};
-			//}
-			//el.events[e] = [];
-			//el.events[e].push(func);
 		});
 		return this;
 	},
 	unbind : function (e, func) {
-		var that = this;
 		this.each(function (el) {
 			NW.Event.removeListener(el, e, func);
 		});

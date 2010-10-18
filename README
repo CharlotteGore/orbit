@@ -1,0 +1,160 @@
+Name: ORBIT
+
+Description: A CPU Independent Keyframing Animation Framework for Javascript
+
+Version: 0.2
+
+Author: Charlotte Gore
+
+Latest release: 18th October 2010
+
+Notes: Uses the NW.Dom CSS3 selector engine, and the NW.Events events management engine.
+	   Like jQuery, the primary Orbit object is chainable, giving access to the various methods,
+	   including the key .tween() method.
+	   
+	   ORBIT is, whilst primarily an Animation toolkit, also contains other methods designed to allow
+	   the construction of Orbit enhanced UI components and, possibly, web applications without needing 
+	   a second library. This development is at the very earliest stages, however.
+	   
+	   
+
+Usage: 
+
+$orb( css3 selector )
+
+- Returns an Orbit object containing an array of elements and exposing the methods to manipulate those elements
+
+Chainable Methods:
+	- These methods return the Orbit object, so can be chained, e.g, $orb('#hello-world').setStyle('color','#0000FF').html('<p>Hello World!</p>')
+
+.each( function )
+	- Iterate through each element in the Orbit object and execute /function/.
+
+.setStyle ( css property, value )
+	- Apply css styling directly to the element. Not animated.
+
+.show()
+	- Display elements. Not animated.
+
+.hide()
+	- Hide elements. Not animated.
+
+.html()
+	- Populated the innerHTML property of elements
+	
+.on( event type, function )
+	- Attach an Event Listener to the elements, executing /function/ when triggered.
+	
+.unbind ( event type, function )
+	- Remove an Event Listener from the elements.
+	
+	
+Intrinsic Value Methods:
+	- These methods return actual values and cannot be chained.
+	
+.getCenter()
+	- Returns an array containing the centre points of each of the elements
+
+.getPosition()
+	- Returns an array containing the real position in the page of each element in the Orbit object.
+	
+.getInnerPosition()
+	- Returns an array containing the positions of each element relative to its offsetParent.
+	
+.getMouse( event )
+	- Returns a the position of the mouse 
+	
+
+The Core Tween Method:
+
+.tween({ object });
+	- returns a handle to the Tween object, which contains the following methods:
+	
+	.start( [{syncWith: tween handle}])
+		- starts the animation from the beginning. Optional ability to pass it a handle from another tween 
+		  to sync the animations together. In reality this means their start time is the same and little else.
+		  
+	.stop()
+		- sets the 'stopAnimation' flag. This means that when the animation reaches the end it will not
+		  loop again.
+		  
+	.goToFrame()
+		- DEPRECATED - goes to the frame at step n. This no longer works as intended, and is now used
+		  internally only.
+		
+	.goToFrameAtTime( miliseconds )
+		- Used instead of goToFrame, this displays the animation at n miliseconds through the animation. If 
+		  miliseconds is greater than the duration, it is assumed the animation has looped.
+		  
+	.getStartTime()
+		- returns the startTime of the Tween object, used to help sync animations together.
+		
+	.getRawValuesAtFrame()
+		- Not Yet Implemented. It is intended to expose the caching and precalculation engine without 
+		  rendering anything, i.e, generating a single reusable path.
+		  
+The Object passed to the Tween method is as follows:
+
+	{ 
+		animations : array of animation objects
+		[, duration : miliseconds]
+		[, loop : true|false|"reverse"]
+		[, callback : function]
+		[, easing : "in"|"out"|"both"|"none"]
+	}
+
+The animation objects are:
+
+	{
+		property : "propertyName", 
+		startValue: startValue, 
+		endValue : endValue 
+		[, origin : [x, y], radius : radius]
+		
+		or
+		
+		handle : tween handle
+	}
+	
+	currently supported properties are:
+	
+		Standard CSS properties known to work:
+		
+		top, left, bottom, right
+		width, height
+		backgroundPosition // requires 2D startValue and endValue
+		color,
+		backgroundColor,
+		borderColor,
+		opacity
+		
+		Custom Properties:
+		
+		position // requires 2D startValue and endValue
+		size // requires 2D startValue and endValue
+		rotate // alias for -webkit-transform : rotate() and -moz-transform: rotate()
+
+	startValue and endValue can be in form 
+		100
+		"100" 
+		"100px"
+		"10em"
+		"100px 100px" // 2D coords, typically x and y
+		"#ffffff" // RGB Hash
+		0 - 360 // Degrees, for orbit animations
+		
+	The optional origin and radius properties are for defining an orbital animation.
+	
+	origin is an array of coords, x and y.
+	radius is the radius of the animation in px.
+	
+	
+	The optional handle property takes an object with a goToFrameAtTime method (the returned tween handle 
+	does this). During execution of the animation, it will invoke this method. This allows tweens of differing
+	durations to be run as one tween.
+		
+	
+
+	
+
+

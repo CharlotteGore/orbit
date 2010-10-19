@@ -1,13 +1,31 @@
-/********************
-*
-*
-* The ORBIT Framework
-* By Charlotte Gore
-* v0.2
-*
-* 18th October 2010
-*
-*/
+/*!
+ * Orbit Javascript Animation Framework v0.2.1
+ * http://orbit.charlottegore.com/
+ * Copyright (c) 2010 Charlotte Gore
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * 
+ * 19th October 2010: v0.2.1 - Added .measure(), removed multi-element support
+ * 18th October 2010: v0.1   - Initial release
+ *
+ */
+var knickers;
 
 (function (window, undefined) {
 	
@@ -15,7 +33,7 @@
 			return new orbit.fn.init(selector, args);
 		}
 			
-		version = "0.2";
+		version = "0.2.1";
 		
 		orbit.fn = orbit.prototype = {
 			// Wrapper for the NW.Matcher, CSS 3 Selector engine.
@@ -79,7 +97,7 @@
 				}
 				return this;
 			},
-			setStyle : function (property, value)  { // CSS Shortcut method
+			setStyle : function (property, value)  { // CSS Helper, in Lieu of full keyframing
 				this.each(function (el) {
 					el.style[property] = value;
 				});
@@ -95,7 +113,7 @@
 			hide : function ()  { // Simple Hide
 				var that = this;
 				this.each(function (el) {
-					that.setStyle('display', 'block');
+					that.setStyle('display', 'none');
 				});
 				return this;
 			},
@@ -104,98 +122,6 @@
 					el.innerHTML = str;
 				});
 				return this;
-			}
-			
-		});
-		
-		/***********
-		*
-		*
-		* Measuring utilities. 
-		*
-		*/
-		orbit.fn.extend({
-		
-			getCenter : function () {
-				var dimensions = [], dimensionHelper;
-				
-				dimensionHelper = function (el){
-					var x = 0, y = 0;
-					x = Math.max(el.clientWidth, el.offsetWidth) / 2;
-					y = Math.max(el.clientHeight, el.offsetHeigh) / 2;
-					return {x : x, y : y};
-				};
-				
-				this.each(function (el) {
-					dimensions.push(dimensionHelper(el));
-				});
-				
-				return dimensions;
-				
-			},
-			getPosition : function () {
-			
-				var positions = [], positionHelper;
-				
-				positionHelper = function (el){
-					var curleft = 0, curtop = 0;
-					if (el.offsetParent) {
-					do {
-						curleft += el.offsetLeft;
-						curtop += el.offsetTop;
-					} while (el = el.offsetParent);
-						return {x : curleft, y : curtop};
-					}
-				
-				};
-				
-				this.each(function (el) {
-					positions.push(positionHelper(el));
-				});
-				
-				return positions;
-			},
-			getInnerPosition : function () {
-				
-				var positions = [], positionHelper;
-				
-				positionHelper = function (el){
-					
-					var curleft = 0, curtop = 0;
-	
-						curleft += el.offsetLeft;
-						curtop += el.offsetTop;
-						
-						return {x : curleft, y : curtop};
-					
-				
-				};
-				this.each(function (el) {
-					positions.push(positionHelper(el));
-				});
-				return positions;
-			},
-			getMouse : function ( evt ) {
-				
-				var pointerX =   function (event) {
-					var docElement = document.documentElement,
-					body = document.body || { scrollLeft: 0 };
-	
-					return event.pageX || (event.clientX +
-					(docElement.scrollLeft || body.scrollLeft) -
-					(docElement.clientLeft || 0));
-				};
-	
-				var pointerY = function(event) {
-				    var docElement = document.documentElement,
-				    body = document.body || { scrollTop: 0 };
-				
-				    return  event.pageY || (event.clientY +
-						(docElement.scrollTop || body.scrollTop) -
-						(docElement.clientTop || 0));
-				 };
-				 return { x : pointerX(evt), y: pointerY(evt) };
-			
 			}
 			
 		});
@@ -216,6 +142,7 @@
 					loop = o.loop || false,
 					steps = (o.duration / tick),
 					duration = (o.duration / steps) || 5,
+					elStyle = this.elements[0].style, // No more multi-element animations.
 					startTime,
 					elapsedTime,
 					oldPercent,
@@ -682,7 +609,7 @@
 						startTime = d.getTime();
 					}
 					
-					timeoutID = setTimeout(step, 0);
+					/* timeoutID =*/ setTimeout(step, 0);
 					return this;
 				};
 				
@@ -743,76 +670,44 @@
 	
 						var value = o.transforms[0].path[percent];
 	
-						that.each(function (el)  {
-							el.style.opacity = value / 100;
-							el.style.filter = "alpha(opacity="+value+")";
-	
-						});
+						elStyle.opacity = value / 100;
+						elStyle.filter = "alpha(opacity="+value+")";
+						
 
 					},
 					generic : function (o) {
-						// Generic 
-						var value = o.transforms[0].path[percent];
-						if(o.units=="px"){
-							value = Math.round(value); // rounding px values is necessary for IE??? *CHECK!!!*
-						}
-						that.each(function (el) {
-							el.style[o.property] = value + o.units;
-						});
+						// Generic 			
+						elStyle[o.property] = o.transforms[0].path[percent] + o.units;	
 					},
 					genericColor : function (o){
-						var i,hash ="#",value;
-						for(i = 0;i < 3;i += 1){
-							value = (Math.round(o.transforms[i].path[percent])).toString(16);
-							if(value.length === 1){
-								value = "0" + value;
-							}
-							hash += value;
-						}
-						that.each(function (el) {
-							el.style[o.property] = hash;
-						});
+					
+						elStyle[o.property] = "rgb(" + (Math.round(o.transforms[0].path[percent])) + "," + (Math.round(o.transforms[1].path[percent])) + "," + (Math.round(o.transforms[2].path[percent])) + ")";
+						
 					},
 					position : function (o) {
-
-						var value = {};
-						value.x = o.transforms[0].path[percent];
-						value.y = o.transforms[1].path[percent];
 						
-						that.each(function (el) {
-							//el.innerHTML = percent;
-							el.style.left = value.x + o.units;
-							el.style.top = value.y + o.units;
-							
-						});
+						elStyle.left = o.transforms[0].path[percent] + o.units;
+						elStyle.top = o.transforms[1].path[percent] + o.units;
+						
 					},
 					size : function (o) {
-						var value = {};
-						value.x = o.transforms[0].path[percent];
-						value.y = o.transforms[1].path[percent];
-						that.each(function (el) {
-							
-							el.style.width = value.x + o.units;
-							el.style.height = value.y + o.units;
-							
-						});
+						
+						elStyle.width = o.transforms[0].path[percent] + o.units;
+						elStyle.height = o.transforms[1].path[percent] + o.units;
+						
 					},
 					backgroundPosition : function (o) {
-						var value = {};
-						value.x = o.transforms[0].path[percent];
-						value.y = o.transforms[1].path[percent];
-						that.each(function (el) {
-							
-							el.style.backgroundPosition = value.x + o.units + " " + value.y + o.units;
-							
-						});
+
+						
+						elStyle.backgroundPosition = o.transforms[0].path[percent] + o.units + " " + o.transforms[1].path[percent] + o.units;
+						
 					},
 					rotate : function (o) {
 						var value = o.transforms[0].path[percent];
-						that.each(function (el) {
-							el.style["-webkit-transform"] = "rotate("+value+"deg)";
-							el.style.MozTransform = "rotate("+value+"deg)";
-						});
+						
+						elStyle["-webkit-transform"] = "rotate("+value+"deg)";
+						elStyle.MozTransform = "rotate("+value+"deg)";
+
 					},
 					color : function (o) {
 						// Generate a hash code for the color...
@@ -836,18 +731,18 @@
 				*/
 					var i;
 					
-					if(timeoutID!==-1){
-						clearTimeout(timeoutID);
-					}
+					//if(timeoutID!==-1){
+					//	clearTimeout(timeoutID);
+					//}
 					
 					percent = getElapsedPercent();
 					
 					if(reverse){
 						percent = steps - percent;
 					}
-								
-					for (i = 0; i < animations.length; i += 1) {
-	
+					
+					i = animations.length;
+					while(i--){
 						if(animations[i].handle){
 							animations[i].handle.goToFrameAtTime(elapsedTime);
 						}else if(updateHandlers[animations[i].property]){
@@ -855,8 +750,7 @@
 						}else{
 							updateHandlers.generic(animations[i]);
 						}
-						
-					}
+					}			
 					
 					if ((!reverse && percent >= steps) || (reverse && percent <= 0)) {
 		
@@ -876,7 +770,7 @@
 								}
 											
 								startTime = startTime + (duration * steps);	
-								timeoutID = setTimeout(step, tick);
+								/*timeoutID = */ setTimeout(step, tick);
 							} else {
 								if (callback) {
 									callback();	
@@ -887,7 +781,7 @@
 					
 					} else {
 					
-						timeoutID = setTimeout(step, tick);
+						/* timeoutID = */ setTimeout(step, tick);
 					}
 					
 				};
@@ -933,7 +827,209 @@ orbit.fn.extend({
 			NW.Event.removeListener(el, e, func);
 		});
 		return this;
+	},
+	getMouse : function ( evt ) {
+	/****
+	* 
+	* Moved this into the events block
+	*
+	* Gets a useful figure for the x & y coordinates of the mouse when an event is fired
+	*
+	*/ 
+	
+		var pointerX =   function (event) {
+			var docElement = document.documentElement,
+			body = document.body || { scrollLeft: 0 };
+	
+			return event.pageX || (event.clientX +
+			(docElement.scrollLeft || body.scrollLeft) -
+			(docElement.clientLeft || 0));
+		};
+	
+		var pointerY = function(event) {
+		    var docElement = document.documentElement,
+		    body = document.body || { scrollTop: 0 };
+		
+		    return  event.pageY || (event.clientY +
+				(docElement.scrollTop || body.scrollTop) -
+				(docElement.clientTop || 0));
+		 };
+		 return { x : pointerX(evt), y: pointerY(evt) };
+	
 	}
+	
 	});
 	
-})(window)
+})(window);
+
+(function(window){
+		/***********
+		*
+		*
+		* Measuring utilities
+		*
+		* Reduced to one key function, "measure" which contains all the necessary helper methods.
+		*
+		* This isn't very efficient, and it doesn't support multiple elements yet. 
+		*
+		* Eventually it may be worth letting measure take arguments to just get specific data,
+		* rather than returning every data it can get it's grubby hands on.
+		*
+		*/
+		orbit.fn.extend({
+			
+			measure : function () {
+			
+				var that = this;
+				// Helpers
+				
+				var getStyle = function (property, e) {
+					if(!e){
+						e = el;
+					}
+					if (e.currentStyle)
+						var y = parseInt((e.currentStyle[property]).replace('px',''));
+					else if (window.getComputedStyle){
+						var y = parseInt((document.defaultView.getComputedStyle(e,null).getPropertyValue(property)).replace('px',''));
+					}
+					return y;
+					
+				};	
+				
+				var getOuterSize = function ()	{
+					
+					var x = 0, y = 0;
+					x = Math.max(el.clientWidth, el.offsetWidth);
+					y = Math.max(el.clientHeight, el.offsetHeight);
+					return {x : x, y : y};
+				
+				};	
+				var getInnerSize = function() {
+
+					var p = boxDetails.padding;
+					var b = boxDetails.border;
+					
+					var xOffset = p.left + p.right + b.left + b.right;
+					var yOffset = p.top + p.bottom + b.top + b.bottom;
+					
+					var x = 0, y = 0;
+					x = (Math.max(el.clientWidth, el.offsetWidth)) - xOffset;
+					y = (Math.max(el.clientHeight, el.offsetHeight)) - yOffset;
+					return {x : x, y : y};
+					
+				};
+				
+				var getRealPositionInPage = function ()	{
+					
+					var curleft = 0, curtop = 0, e = el;
+					
+					if (e.offsetParent) {
+						do {
+							curleft += e.offsetLeft;
+							curtop += e.offsetTop;
+						} while (e = e.offsetParent);
+						
+						return {x : curleft, y : curtop};
+					}
+				
+				};
+				
+				var getInnerPosition = function () {
+						
+					var m = boxDetails.margin;
+					
+					var xOffset = m.left;
+					var yOffset = m.top;	
+						
+					var curleft = 0, curtop = 0;
+		
+					curleft += (el.offsetLeft - xOffset);
+					curtop += (el.offsetTop - yOffset);
+							
+					return {x : curleft, y : curtop};
+				
+				}
+				
+				var getBoxDetail = function () {
+				
+					var padding={}, border={}, margin={};
+					
+					padding.top = getStyle("padding-top");
+					padding.right = getStyle("padding-right");
+					padding.bottom = getStyle("padding-bottom");
+					padding.left = getStyle("padding-left");
+					
+					margin.top = getStyle("margin-top");
+					margin.right = getStyle("margin-right");
+					margin.bottom = getStyle("margin-bottom");
+					margin.left = getStyle("margin-left");
+					
+					border.top = getStyle("border-top-width");
+					border.right = getStyle("border-right-width");
+					border.bottom = getStyle("border-bottom-width");
+					border.left = getStyle("border-left-width");
+					
+					return{
+						padding: padding,
+						border: border,
+						margin: margin,
+					}
+				
+				};
+				
+				var findHiddenParent = function (e) {
+						while ((e = e.parentNode) && e != document.documentElement){
+							if (e.style.display=="none"){
+								return e;
+							}
+					    }
+					    return false;
+				};
+				
+				if(this.elements.length==1){
+					var el = this.elements[0], wasHiddenElement=false;
+					
+					if(el.style.display=="none"){
+						wasHiddenElement = true;
+						el.style.display="block";
+					}
+					
+					var hiddenParent = findHiddenParent(el);
+					
+					if(hiddenParent){
+						hiddenParent.style.display="block";
+					}
+				
+				
+					var boxDetails = getBoxDetail();
+					var pagePosition = getRealPositionInPage();
+					var innerPosition = getInnerPosition();
+					var outerSize = getOuterSize();
+					var innerSize = getInnerSize();
+					
+					if(hiddenParent){
+						hiddenParent.style.display="none";
+					}
+					
+					if(wasHiddenElement){
+						el.style.display = "none";
+					}
+					
+					
+				}else{
+					// for now, let's just do nothing.
+				}
+				
+				return {
+					pagePosition : pagePosition,
+					innerPosition : innerPosition,
+					outerSize : outerSize,
+					innerSize : innerSize,
+					boxDetails : boxDetails
+				};
+			
+			
+			}
+			
+		});
+})(window);

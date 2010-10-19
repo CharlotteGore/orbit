@@ -52,14 +52,9 @@ Chainable Methods:
 Intrinsic Value Methods:
 	- These methods return actual values and cannot be chained.
 	
-.getCenter()
-	- Returns an array containing the centre points of each of the elements
-
-.getPosition()
-	- Returns an array containing the real position in the page of each element in the Orbit object.
-	
-.getInnerPosition()
-	- Returns an array containing the positions of each element relative to its offsetParent.
+.measure()
+	- Returns an object containing innerSize, outerSize, pagePosition, innerPosition and boxDetails, which 
+	  contains objects with values for padding, margins and borders. 
 	
 .getMouse( event )
 	- Returns a the position of the mouse 

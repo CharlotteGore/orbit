@@ -21,19 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  * 
+ * 20th October 2010: v0.2.2 - Added support for IE7 and IE8, added IE camelCase property name lookup to .measure();
  * 19th October 2010: v0.2.1 - Added .measure(), removed multi-element support
  * 18th October 2010: v0.1   - Initial release
  *
  */
 var knickers;
 
-(function (window, undefined) {
+(function (window) {
 	
 	var orbit = function (selector, args) {
 			return new orbit.fn.init(selector, args);
 		}
 			
-		version = "0.2.1";
+		version = "0.2.2";
 		
 		orbit.fn = orbit.prototype = {
 			// Wrapper for the NW.Matcher, CSS 3 Selector engine.
@@ -169,7 +170,7 @@ var knickers;
 					step,
 					startValues,
 					endValues,
-					i, 
+					//i, 
 					hideOverflow,
 					absolutize,
 					genericInitHandler,
@@ -385,9 +386,9 @@ var knickers;
 				
 				
 	
-				i = animations.length; 
+				var i = o.animations.length; 
 				while (i--){ // Iterate for each animation
-				
+					
 					var ani = animations[i];
 					
 					//var rgbHashRegex = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
@@ -677,7 +678,7 @@ var knickers;
 					},
 					generic : function (o) {
 						// Generic 			
-						elStyle[o.property] = o.transforms[0].path[percent] + o.units;	
+						elStyle[o.property] = Math.round(o.transforms[0].path[percent]) + o.units;	
 					},
 					genericColor : function (o){
 					
@@ -686,8 +687,8 @@ var knickers;
 					},
 					position : function (o) {
 						
-						elStyle.left = o.transforms[0].path[percent] + o.units;
-						elStyle.top = o.transforms[1].path[percent] + o.units;
+						elStyle.left = Math.round(o.transforms[0].path[percent]) + o.units;
+						elStyle.top = Math.round(o.transforms[1].path[percent]) + o.units;
 						
 					},
 					size : function (o) {
@@ -809,7 +810,7 @@ var knickers;
 
 })(window);
 
-(function(window){
+(function($orb){
 orbit.fn.extend({
 	/**************
 	 *
@@ -860,9 +861,9 @@ orbit.fn.extend({
 	
 	});
 	
-})(window);
+})($orb);
 
-(function(window){
+(function($orb){
 		/***********
 		*
 		*
@@ -883,12 +884,29 @@ orbit.fn.extend({
 				var that = this;
 				// Helpers
 				
+				var IEStyles = {
+					"padding-top" : "paddingTop",
+					"padding-bottom" : "paddingBottom",
+					"padding-left" : "paddingLeft",
+					"padding-right" : "paddingRight",
+					"border-top-width" : "borderTopWidth",
+					"border-left-width" : "borderLeftWidth",
+					"border-right-width" : "borderRightWidth",
+					"border-bottom-width" : "borderBottomWidth",
+					"margin-top" : "marginTop",
+					"margin-left" : "marginLeft",
+					"margin-right" : "marginRight",
+					"margin-bottom" : "marginBottom"
+				};
+			
+				
 				var getStyle = function (property, e) {
 					if(!e){
 						e = el;
 					}
 					if (e.currentStyle)
-						var y = parseInt((e.currentStyle[property]).replace('px',''));
+						
+						var y = parseInt((e.currentStyle[IEStyles[property]]).replace('px',''));
 					else if (window.getComputedStyle){
 						var y = parseInt((document.defaultView.getComputedStyle(e,null).getPropertyValue(property)).replace('px',''));
 					}
@@ -972,7 +990,7 @@ orbit.fn.extend({
 					return{
 						padding: padding,
 						border: border,
-						margin: margin,
+						margin: margin
 					}
 				
 				};
@@ -1032,4 +1050,4 @@ orbit.fn.extend({
 			}
 			
 		});
-})(window);
+})($orb);
